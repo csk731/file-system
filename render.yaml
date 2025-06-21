@@ -1,7 +1,9 @@
 services:
+  # Backend API Service
   - type: web
     name: fileupdown-backend
     env: python
+    plan: free
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -15,17 +17,29 @@ services:
         value: ./uploads
       - key: MAX_FILE_SIZE
         value: 104857600
+      - key: CORS_ORIGINS
+        value: https://fileupdown-frontend.onrender.com
+    healthCheckPath: /health
+    autoDeploy: true
 
+  # Frontend Service
   - type: web
     name: fileupdown-frontend
     env: static
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
         value: https://fileupdown-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    autoDeploy: true
 
 databases:
   - name: fileupdown-db
     databaseName: fileupdown
-    user: fileupdown 
+    user: fileupdown
+    plan: free 

@@ -4,6 +4,7 @@ from app.routers import files
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
+import os
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -14,10 +15,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Get CORS origins from environment variable or use defaults
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+cors_origins_list = [origin.strip() for origin in cors_origins.split(",")]
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
